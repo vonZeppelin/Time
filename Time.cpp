@@ -240,6 +240,7 @@ static uint32_t nextSyncTime = 0;
 static timeStatus_t Status = timeNotSet;
 
 getExternalTime getTimePtr;  // pointer to external sync function
+void *getTimeArg;  // external sync function arg
 //setExternalTime setTimePtr; // not used in this version
 
 #ifdef TIME_DRIFT_INFO   // define this to get drift data
@@ -259,7 +260,7 @@ time_t now() {
   }
   if (nextSyncTime <= sysTime) {
     if (getTimePtr != 0) {
-      time_t t = getTimePtr();
+      time_t t = getTimePtr(getTimeArg);
       if (t != 0) {
         setTime(t);
       } else {
@@ -309,8 +310,9 @@ timeStatus_t timeStatus() {
   return Status;
 }
 
-void setSyncProvider( getExternalTime getTimeFunction){
-  getTimePtr = getTimeFunction;  
+void setSyncProvider(getExternalTime getTimeFunction, void *arg) {
+  getTimePtr = getTimeFunction;
+  getTimeArg = arg;
   nextSyncTime = sysTime;
   now(); // this will sync the clock
 }
